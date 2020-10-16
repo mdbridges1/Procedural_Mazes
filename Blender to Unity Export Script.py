@@ -1,4 +1,4 @@
-## Unity Export Script v2
+## Unity Export Script v2.1
 ## (C)Michael Bridges 2020 www.canopy.games
 
 ## This Script will do the following:
@@ -20,36 +20,49 @@ import os
 
 bpy.ops.wm.save_mainfile()
 
-#####################
+########EDIT HERE#########
 col_name = 'Pieces'
-#####################
+########EDIT HERE#########
 
-unity_dir = '.\FBX_Unity'  
+unity_dir = '.\FBX_Unity'                                       # Save Directory
 
 blend_file_path = bpy.data.filepath
 directory = os.path.dirname(blend_file_path)
  
-bpy.ops.object.select_all(action='DESELECT') 
-
-if os.path.isdir(directory + unity_dir) == False:
+if os.path.isdir(directory + unity_dir) == False:               # Makes directort if one doesn't exist already
     os.makedirs(directory + unity_dir) 
 
+bpy.ops.object.mode_set(mode='OBJECT')                          # Switches into Object mode.
+bpy.ops.object.select_all(action='DESELECT')                    # Makes sure nothing is selected
+
 i = 0    
-for i in range(len(bpy.data.collections[col_name].objects)):
-    if bpy.data.collections[col_name].objects[i].type != 'MESH':
-         i += 1
-    else:    
-        obj_name = bpy.data.collections[col_name].objects[i].name
-        bpy.data.objects[obj_name].select_set(True)
-        bpy.data.objects[obj_name].to_mesh
-        target_file_fbx = os.path.join(directory + unity_dir, obj_name + '.fbx')
+for i in range(len(bpy.data.collections[col_name].objects)):    # Iterate through each object of the named collection
+    
+    obj = bpy.data.collections[col_name].objects[i]
+    
+    if obj.type != 'MESH':                                      # Exclude anything that isn't a Mesh object
+        
+        print(str(i) + obj.name  + " is not a MESH")
+        i += 1
+        continue
+    
+    if obj.parent != None:                                      # Exlcude any Mesh object that is a child
+        
+        print(str(i) + obj.name + " is a CHILD")
+        i += 1
+        continue
+    else:                                                       # Export Parent and Children as a single FBX with Parents name
+        bpy.ops.object.select_all(action='DESELECT') 
+        
+        obj.select_set(True)
+    
+        for child in range(len(obj.children)):
+            bpy.data.objects[obj.children[child].name].select_set(True)
+        
+        obj.to_mesh
+        target_file_fbx = os.path.join(directory + unity_dir, obj.name + '.fbx')
 
-#        bpy.data.collections[col_name].objects[i].rotation_euler[0] = radians(-90)
-#        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
-#        bpy.data.collections[col_name].objects[i].rotation_euler[0] = radians(90)
-
-#        obj_loc = bpy.data.objects[obj_name].location.copy() # copy location
-        bpy.data.objects[obj_name].location = (0,0,0) # move object to world origin
+        bpy.data.objects[obj.name].location = (0,0,0) # move object to world origin
         
         bpy.ops.export_scene.fbx(
             filepath=target_file_fbx, 
@@ -61,7 +74,7 @@ for i in range(len(bpy.data.collections[col_name].objects)):
             apply_unit_scale=True, 
             apply_scale_options='FBX_SCALE_UNITS', 
             bake_space_transform=True, 
-            object_types={'EMPTY', 'CAMERA', 'LIGHT', 'ARMATURE', 'MESH', 'OTHER'}, 
+            object_types={'MESH'}, 
             use_mesh_modifiers=True, 
             use_mesh_modifiers_render=True, 
             mesh_smooth_type='FACE', 
@@ -89,10 +102,8 @@ for i in range(len(bpy.data.collections[col_name].objects)):
             axis_forward='-Z', 
             axis_up='Y')
 
-#        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
-#        
-#        bpy.data.objects[obj_name].location = obj_loc # set object back to it's original location
         bpy.ops.object.select_all(action='DESELECT')   
-        i =+ 1
-
+        print(str(i) + obj.name  + " is EXPORTED")
+        i += 1
+        
 bpy.ops.wm.revert_mainfile()
