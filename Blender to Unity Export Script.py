@@ -21,7 +21,7 @@ import os
 bpy.ops.wm.save_mainfile()
 
 ########EDIT HERE#########
-col_name = 'Pieces'
+col_name = 'Pieces.001'
 ########EDIT HERE#########
 
 unity_dir = '.\FBX_Unity'                                       # Save Directory
@@ -40,11 +40,11 @@ for i in range(len(bpy.data.collections[col_name].objects)):    # Iterate throug
     
     obj = bpy.data.collections[col_name].objects[i]
     
-    if obj.type != 'MESH':                                      # Exclude anything that isn't a Mesh object
-        
-        print(str(i) + obj.name  + " is not a MESH")
-        i += 1
-        continue
+#    if obj.type != 'MESH':                                      # Exclude anything that isn't a Mesh object
+#        
+#        print(str(i) + obj.name  + " is not a MESH")
+#        i += 1
+#        continue
     
     if obj.parent != None:                                      # Exlcude any Mesh object that is a child
         
@@ -74,7 +74,7 @@ for i in range(len(bpy.data.collections[col_name].objects)):    # Iterate throug
             apply_unit_scale=True, 
             apply_scale_options='FBX_SCALE_UNITS', 
             bake_space_transform=True, 
-            object_types={'MESH'}, 
+            object_types={'MESH', 'LIGHT'}, 
             use_mesh_modifiers=True, 
             use_mesh_modifiers_render=True, 
             mesh_smooth_type='FACE', 
